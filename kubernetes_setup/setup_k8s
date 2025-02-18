@@ -1,0 +1,97 @@
+create ec2
+one master and two worker nodes
+
+Run below commands on master and worker nodes
+
+sudo su
+yum install docker -y
+systemctl start docker
+
+yum repolist
+
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+sudo systemctl enable --now kubelet
+
+-----------------------------------------------------------------------------------------------------------------
+
+on master
+kubeadm init
+kubectl get nodes
+
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+Enable Outbound Integrations on worker node for port : 6443
+
+If needed restart : sudo systemctl restart kubelet
+
+check connectivity on master node :  nc -zv 172.31.20.103 6443
+
+-----------------------------------------------------------------------------------------------------------------
+
+on worker nodes
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.31.20.103:6443 --token gz282t.sk3shofntbmvlscs \
+        --discovery-token-ca-cert-hash sha256:d2c6cc9900f354c1e05a091556d49920d6ee622e96ffa30264e4fbb37b3a3e94
+
+
+Enable Inbound Integrations on worker node for port : 6443
+
+------------------------------------------------------------------------------------------------------------------
+
+when we run kubectl get nodes on master we can see status is Not Ready means networking is not enabled
+
+to download calico on master node:
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/calico.yaml -O
+
+kubectl apply -f calico.yaml
+
+watch kubectl get nodes
+
+run command to check calico pods are running it will take some time to come up 5-7 mins: kubectl get pods -n kube-system
+
+[root@ip-172-31-20-103 ec2-user]# kubectl get pods -n kube-system
+NAME                                                    READY   STATUS             RESTARTS         AGE
+calico-kube-controllers-77969b7d87-z7g5g                0/1     CrashLoopBackOff   3 (29s ago)      7m25s
+calico-node-pjs9s                                       0/1     Running            1 (21s ago)      7m25s
+calico-node-qthsw                                       0/1     Running            0                7m25s
+calico-node-vvh2h                                       0/1     Running            1 (24s ago)      7m25s
+coredns-668d6bf9bc-88bnr                                1/1     Running            0                42m
+coredns-668d6bf9bc-dh4sd                                1/1     Running            1 (40s ago)      42m
+etcd-ip-172-31-20-103.ec2.internal                      1/1     Running            22 (102s ago)    36m
+kube-apiserver-ip-172-31-20-103.ec2.internal            1/1     Running            21 (3m15s ago)   42m
+kube-controller-manager-ip-172-31-20-103.ec2.internal   0/1     CrashLoopBackOff   22 (3s ago)      33m
+kube-proxy-p8bgf                                        1/1     Running            20 (92s ago)     42m
+kube-proxy-shn9d                                        0/1     CrashLoopBackOff   6 (3m40s ago)    18m
+kube-proxy-wf62f                                        0/1     CrashLoopBackOff   6 (4m27s ago)    18m
+kube-scheduler-ip-172-31-20-103.ec2.internal            1/1     Running            21 (87s ago)     41m
+[root@ip-172-31-20-103 ec2-user]#
+
+[root@ip-172-31-20-103 ec2-user]# kubectl get nodes
+NAME                            STATUS   ROLES           AGE   VERSION
+ip-172-31-17-248.ec2.internal   Ready    <none>          18m   v1.32.2
+ip-172-31-20-103.ec2.internal   Ready    control-plane   43m   v1.32.2
+ip-172-31-23-213.ec2.internal   Ready    <none>          18m   v1.32.2
+[root@ip-172-31-20-103 ec2-user]#
