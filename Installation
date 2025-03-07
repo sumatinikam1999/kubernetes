@@ -121,3 +121,85 @@ Admin@DESKTOP-2IV78AD MINGW64 ~
 
 https://kubernetes.io/vi/docs/reference/kubectl/cheatsheet/
 https://kubernetes.io/blog/
+
+Imperative
+Declarative
+
+Imperative
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl run nginx-pod --image=nginx:latest
+pod/nginx-pod created
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl get pods
+NAME        READY   STATUS    RESTARTS   AGE
+nginx-pod   0/1     Pending   0          6s
+
+vi pod.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: new-pod
+  labels:
+    env: demo
+    type: frontend
+spec:
+  containers:
+  - name: new-container
+    image: nginx
+    ports:
+      - containerPort: 80
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl create -f pod.yaml
+pod/new-pod created
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl get pods
+NAME        READY   STATUS              RESTARTS   AGE
+new-pod     0/1     ContainerCreating   0          8s
+nginx-pod   1/1     Running             0          42m
+
+vi pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: new-pod
+  labels:
+    env: demo
+    type: frontend
+spec:
+  containers:
+  - name: new-container
+    image: nginx123
+    ports:
+      - containerPort: 80
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl create -f pod.yaml
+pod/new-pod created
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl get pods
+NAME        READY   STATUS             RESTARTS   AGE
+new-pod     0/1     ImagePullBackOff   0          4m19s
+nginx-pod   1/1     Running            0          51m
+
+kubectl describe pod
+
+kubectl edit pod nginx-pod
+
+kubectl exec -it nginx-pod -- sh
+
+kubectl run nginx --image-nginx --dry-run=client -o yaml > pod.yaml
+
+kubectl get pods nginx-pod --show-labels
+
+kubectl get pods -o wide
+
+kubectl get nodes
+
+kubectl get nodes -o wide
+
