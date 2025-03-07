@@ -64,3 +64,60 @@ nodes:
 - role: control-plane
 - role: worker
 - role: worker
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kind create cluster --image kindest/node:v1.32.2@sha256:f226345927d7e348497136874b6d207e0b32cc52154ad8323129352923a3142f --name cka-cluster-new --config config.yaml
+Creating cluster "cka-cluster-new" ...
+ • Ensuring node image (kindest/node:v1.32.2) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.32.2) 🖼
+ • Preparing nodes 📦 📦 📦   ...
+ ✓ Preparing nodes 📦 📦 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-cka-cluster-new"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-cka-cluster-new
+
+Have a nice day! 👋
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl get nodes
+NAME                            STATUS     ROLES           AGE     VERSION
+cka-cluster-new-control-plane   Ready      control-plane   11m     v1.32.2
+cka-cluster-new-worker          NotReady   <none>          3m28s   v1.32.2
+cka-cluster-new-worker2         NotReady   <none>          3m35s   v1.32.2
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl config get-contexts
+CURRENT   NAME                   CLUSTER                AUTHINFO               NAMESPACE
+          kind-cka-cluster       kind-cka-cluster       kind-cka-cluster
+*         kind-cka-cluster-new   kind-cka-cluster-new   kind-cka-cluster-new
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl config use-context kind-cka-cluster
+Switched to context "kind-cka-cluster".
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+$ kubectl config get-contexts
+CURRENT   NAME                   CLUSTER                AUTHINFO               NAMESPACE
+*         kind-cka-cluster       kind-cka-cluster       kind-cka-cluster
+          kind-cka-cluster-new   kind-cka-cluster-new   kind-cka-cluster-new
+
+Admin@DESKTOP-2IV78AD MINGW64 ~
+
+
+
+https://kubernetes.io/vi/docs/reference/kubectl/cheatsheet/
+https://kubernetes.io/blog/
